@@ -1,8 +1,7 @@
-import 'chart_bar.dart';
-
-import '../models/transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/transaction.dart';
+import 'chart_bar.dart';
 
 class Chart extends StatelessWidget {
   final List<Transaction> recentTransaction;
@@ -14,6 +13,7 @@ class Chart extends StatelessWidget {
       final weekDay = DateTime.now().subtract(
         Duration(days: index),
       );
+
       double totalSum = 0.0;
 
       for (var i = 0; i < recentTransaction.length; i++) {
@@ -25,11 +25,8 @@ class Chart extends StatelessWidget {
           totalSum += recentTransaction[i].value;
         }
       }
-      //retorna a sigla do dia
-      return {
-        'day': DateFormat.E().format(weekDay)[0],
-        'value': totalSum,
-      };
+
+      return {'day': DateFormat.E().format(weekDay)[0], 'value': totalSum};
     }).reversed.toList();
   }
 
@@ -41,7 +38,6 @@ class Chart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    groupedTransactions;
     return Card(
       elevation: 6,
       margin: EdgeInsets.all(20),

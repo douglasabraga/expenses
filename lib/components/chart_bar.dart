@@ -16,7 +16,7 @@ class ChartBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (ctx, constraints) {
         return Column(
-          children: [
+          children: <Widget>[
             Container(
               height: constraints.maxHeight * 0.15,
               child: FittedBox(
@@ -29,7 +29,7 @@ class ChartBar extends StatelessWidget {
               width: 10,
               child: Stack(
                 alignment: Alignment.bottomCenter,
-                children: [
+                children: <Widget>[
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -47,16 +47,16 @@ class ChartBar extends StatelessWidget {
                           color: Theme.of(context).primaryColor,
                           borderRadius: BorderRadius.circular(5)),
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
-            SizedBox(
-              height: constraints.maxHeight * 0.05,
-            ),
+            SizedBox(height: constraints.maxHeight * 0.05),
             Container(
               height: constraints.maxHeight * 0.15,
-              child: FittedBox(child: Text(label)),
+              child: FittedBox(
+                child: Text(label),
+              ),
             ),
           ],
         );
