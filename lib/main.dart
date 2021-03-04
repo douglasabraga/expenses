@@ -2,6 +2,7 @@ import 'components/chart.dart';
 import 'components/transaction_form.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:io';
 import 'components/transaction_list.dart';
 import 'models/transaction.dart';
 
@@ -20,6 +21,10 @@ class ExpensesApp extends StatelessWidget {
               headline6: TextStyle(
                 fontFamily: 'OpenSans',
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              button: TextStyle(
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -42,26 +47,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _transactions = [
-    Transaction(
-      id: 't0',
-      title: 'Conta Antiga',
-      value: 200,
-      date: DateTime.now().subtract(Duration(days: 1)),
-    ),
-    Transaction(
-      id: 't1',
-      title: 'Novo Tênis de Caminhada',
-      value: 310.76,
-      date: DateTime.now().subtract(Duration(days: 2)),
-    ),
-    Transaction(
-      id: 't2',
-      title: 'Calça',
-      value: 98.99,
-      date: DateTime.now().subtract(Duration(days: 1)),
-    ),
-  ];
+  final List<Transaction> _transactions = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTransaction {
     return _transactions.where((tr) {
@@ -71,12 +58,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
-  _addTransaction(String title, double value) {
+  _addTransaction(String title, double value, DateTime date) {
     final newTransaction = Transaction(
       id: Random().nextDouble().toString(),
       title: title,
       value: value,
-      date: DateTime.now(),
+      date: date,
     );
 
     setState(() {
@@ -84,6 +71,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     Navigator.of(context).pop();
+  }
+
+  _deleteTransaction(String id) {
+    setState(() {
+      _transactions.removeWhere((tr) => tr.id == id);
+    });
   }
 
   _openTransactionFormModal(BuildContext context) {
@@ -96,29 +89,76 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Despesas pessoais"),
-        actions: [
+    final mediaQuery = MediaQuery.of(context);
+    bool isLandscape = mediaQuery.orientation == Orientation.landscape;
+
+    final appBar = AppBar(
+      title: Text("Despesas pessoais",
+          style: TextStyle(
+            fontSize: 20 * mediaQuery.textScaleFactor,
+          )),
+      actions: [
+        if (isLandscape)
           IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _openTransactionFormModal(context),
+            icon: Icon(_showChart ? Icons.list : Icons.show_chart),
+            onPressed: () {
+              setState(() {
+                _showChart = !_showChart;
+              });
+            },
           ),
-        ],
-      ),
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () => _openTransactionFormModal(context),
+        ),
+      ],
+    );
+
+    final availableHeight = mediaQuery.size.height -
+        appBar.preferredSize.height -
+        mediaQuery.padding.top;
+
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Chart(_recentTransaction),
-            TransactionList(_transactions),
+            if (isLandscape)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Exibir Gráfico'),
+                  Switch.adaptive(
+                    activeColor: Theme.of(context).accentColor,
+                    value: _showChart,
+                    onChanged: (value) {
+                      setState(() {
+                        _showChart = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            if (_showChart || !isLandscape)
+              Container(
+                height: availableHeight * (isLandscape ? 0.7 : 0.3),
+                child: Chart(_recentTransaction),
+              ),
+            if (!_showChart || !isLandscape)
+              Container(
+                height: availableHeight * (isLandscape ? 1 : 0.7),
+                child: TransactionList(_transactions, _deleteTransaction),
+              ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () => _openTransactionFormModal(context),
-      ),
+      floatingActionButton: Platform.isIOS
+          ? Container()
+          : FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () => _openTransactionFormModal(context),
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
